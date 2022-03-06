@@ -1,0 +1,23 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Overpass:wght@300;400;700;900&display=swap");
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html { 
+    background: url(https://images4.alphacoders.com/976/thumb-1920-976013.jpg) no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+  body {
+    color: white !important;
+  }
+
