@@ -84,7 +84,7 @@ export default function App(): ReactTypes {
             file.name
         );
 
-        console.log(formData);
+      
 
         const config: any = {
             onUploadProgress: (progressEvent: any) => {
