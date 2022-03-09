@@ -84,10 +84,16 @@ export default function App(): ReactTypes {
             file.name
         );
 
+        console.log(formData);
+
         const config: any = {
             onUploadProgress: (progressEvent: any) => {
                 setProgress((progressEvent.loaded / progressEvent.total) * 100);
-            }
+            },
+            headers: { 'content-type': 'multipart/form-data' },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+            maxRedirects: Infinity,
         };
 
         setStartLoading(true);
@@ -130,10 +136,10 @@ export default function App(): ReactTypes {
 
 
             if (data && !data.content && !data.code) {
-                setStartLoading(false)
                 setFile(null);
                 setProgress(0);
                 Array.from(document.querySelectorAll("input")).forEach(input => (input.value = ""));
+                setStartLoading(false);
                 enqueueSnackbar(t("index.completedVideo"), {
                     variant: "success",
                     anchorOrigin: {
@@ -142,7 +148,7 @@ export default function App(): ReactTypes {
                     },
                     autoHideDuration: 3500,
                 });
-                return navigate(`/player/${data.videoId}`)
+                return window.location.href = `/player/${data.videoId}`;
             };
 
 
@@ -156,7 +162,9 @@ export default function App(): ReactTypes {
     const handleCancel = (event: any): any => {
         if (event) event.preventDefault();
         setFile(null);
+        setProgress(0);
         Array.from(document.querySelectorAll("input")).forEach(input => (input.value = ""));
+        setStartLoading(false);
         return enqueueSnackbar(t("index.cancelled"), {
             variant: "success",
             anchorOrigin: {
@@ -204,11 +212,11 @@ export default function App(): ReactTypes {
                             :
                             (<React.Fragment>
                                 <Grid spacing={2} container>
-                                    <Grid item>
+                                    {startLoading ? "" : (<Grid item>
                                         <Button onClick={(e: any) => { handleUpload(e) }} variant="contained" component="span">
                                             {t("index.startUpload")}
                                         </Button>
-                                    </Grid>
+                                    </Grid>)}
                                     <Grid item>
                                         <Button onClick={(e: any) => { handleCancel(e) }} variant="contained" component="span">
                                             {t("index.cancel")}
