@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ReactTypes } from "../../types/reactPages";
-import { Box, Button, Grid, IconButton, Typography, CircularProgress, Modal } from "@mui/material";
+import { Box, Button, Grid, IconButton, Typography, CircularProgress } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import Loading from "../../components/loading/loading";
 import MyLogo from "../../images/favicon.png";
@@ -13,7 +13,8 @@ import { useTranslation } from "react-i18next";
 import Dotdotdot from 'react-dotdotdot';
 import axios from "../../helpers/axios";
 import { AxiosResponse } from "axios";
-import { useNavigate } from "react-router-dom";
+
+
 
 
 
@@ -55,14 +56,32 @@ function CircularProgressWithLabel(props: any) {
 }
 
 
+
+let controller = new AbortController();
+
 export default function App(): ReactTypes {
     const classes: ReactTypes = useStyles();
     const [file, setFile]: ReactTypes = useState(null);
     const [progress, setProgress]: ReactTypes = useState(0);
     const [startLoading, setStartLoading]: ReactTypes = useState(false);
+    const [click, setClick]: ReactTypes = useState(false);
     const { enqueueSnackbar } = useSnackbar();
     const { t } = useTranslation();
-    const navigate = useNavigate();
+
+
+
+
+
+
+    const handleSıfır = (abort?: boolean): any => {
+        setFile(null);
+        setProgress(0);
+        Array.from(document.querySelectorAll("input")).forEach(input => (input.value = ""));
+        setStartLoading(false);
+        setClick(false);
+        controller.abort();
+        controller = new AbortController();
+    };
 
     const handleUpload = (event: any): any => {
         if (event) event.preventDefault();
@@ -78,14 +97,15 @@ export default function App(): ReactTypes {
         };
         const formData: any = new FormData();
 
+
         formData.append(
             "video",
             file,
             file.name
         );
 
-      
 
+        setClick(true);
         const config: any = {
             onUploadProgress: (progressEvent: any) => {
                 setProgress((progressEvent.loaded / progressEvent.total) * 100);
@@ -94,14 +114,17 @@ export default function App(): ReactTypes {
             maxContentLength: Infinity,
             maxBodyLength: Infinity,
             maxRedirects: Infinity,
+            signal: controller.signal,
         };
 
         setStartLoading(true);
+
         axios.post("upload", formData, config).then((res: AxiosResponse) => {
 
             let data: any = res.data;
 
             if (data && data.content === "Missing video" && data.code === 501) {
+                handleSıfır();
                 return enqueueSnackbar(t("index.fileMissing"), {
                     variant: "error",
                     anchorOrigin: {
@@ -113,6 +136,7 @@ export default function App(): ReactTypes {
             };
 
             if (data && data.content === "Only .mp4 format allowed!" && data.code === 501) {
+                handleSıfır();
                 return enqueueSnackbar(t("index.invalidFileFormat"), {
                     variant: "error",
                     anchorOrigin: {
@@ -124,6 +148,7 @@ export default function App(): ReactTypes {
             };
 
             if (data && data.content === "The video file can't be larger than 1GB." && data.code === 501) {
+                handleSıfır();
                 return enqueueSnackbar(t("index.largerVideo"), {
                     variant: "error",
                     anchorOrigin: {
@@ -136,10 +161,7 @@ export default function App(): ReactTypes {
 
 
             if (data && !data.content && !data.code) {
-                setFile(null);
-                setProgress(0);
-                Array.from(document.querySelectorAll("input")).forEach(input => (input.value = ""));
-                setStartLoading(false);
+                handleSıfır();
                 enqueueSnackbar(t("index.completedVideo"), {
                     variant: "success",
                     anchorOrigin: {
@@ -160,11 +182,7 @@ export default function App(): ReactTypes {
 
 
     const handleCancel = (event: any): any => {
-        if (event) event.preventDefault();
-        setFile(null);
-        setProgress(0);
-        Array.from(document.querySelectorAll("input")).forEach(input => (input.value = ""));
-        setStartLoading(false);
+        handleSıfır();
         return enqueueSnackbar(t("index.cancelled"), {
             variant: "success",
             anchorOrigin: {
@@ -174,6 +192,8 @@ export default function App(): ReactTypes {
             autoHideDuration: 3500,
         });
     };
+
+
 
     return (<React.Fragment>
 
@@ -211,18 +231,24 @@ export default function App(): ReactTypes {
                             </Button>)
                             :
                             (<React.Fragment>
-                                <Grid spacing={2} container>
-                                    {startLoading ? "" : (<Grid item>
+
+                                {!click ? (<Grid spacing={2} container>
+                                    <Grid item>
                                         <Button onClick={(e: any) => { handleUpload(e) }} variant="contained" component="span">
                                             {t("index.startUpload")}
                                         </Button>
-                                    </Grid>)}
+                                    </Grid>
                                     <Grid item>
                                         <Button onClick={(e: any) => { handleCancel(e) }} variant="contained" component="span">
                                             {t("index.cancel")}
                                         </Button>
                                     </Grid>
-                                </Grid>
+                                </Grid>) : (<Grid justifyContent="center" container alignItems="center">
+                                    <Button onClick={(e: any) => { handleCancel(e) }} variant="contained" component="span">
+                                        {t("index.cancel")}
+                                    </Button>
+                                </Grid>)}
+
                             </React.Fragment>)
                         }
                     </Grid>
